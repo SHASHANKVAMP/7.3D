@@ -1,0 +1,52 @@
+# Name- Shashank Samyal
+# Student ID - 2110994852 
+
+import RPi.GPIO as GPIO     # libraries imported
+import time
+
+
+LED_Pin = 12       # Pins being used
+Trigger_Pin = 18
+Echo_Pin = 24
+
+GPIO.setmode(GPIO.BOARD)   #GPIO Pin number
+
+GPIO.setwarnings(False)  # GPIO warning - False
+
+GPIO.setup(LED_Pin, GPIO.OUT)     # inputs and outputs of the LED and Ultrasonic sensor
+GPIO.setup(Trigger_Pin, GPIO.OUT)
+GPIO.setup(Echo_Pin, GPIO.IN)
+
+pwm = GPIO.PWM(LED_Pin, 100)  # Max value = 100
+pwm.start(0)
+
+try:
+    while True:
+   
+        GPIO.output(Trigger_Pin, 0)  # Trigger HIGH
+        time.sleep(0.000002)    # Delay
+        GPIO.output(Trigger_Pin, 1)  # Trigger LOW
+        time.sleep(0.00001)  # Delay
+
+        while GPIO.input(Echo_Pin) == 0: # time of arrival
+            START_TIME = time.time() # start time calculated
+ while not GPIO.input(Echo_Pin) == 0:
+            END_TIME = time.time() # end time calculated
+
+        Time_Interval = END_TIME - START_TIME  # difference between start and the arrival
+
+       
+        distance = (Time_Interval*34300)/2  # 34300 = Sonic Speed
+        print("Distance: " + str(distance))  # displaying the calculated distance on the terminal
+
+        if distance <= 20 and distance > 0:  # control of the analogue pins of LED
+            pwm.ChangeDutyCycle(((20 - distance)/30) * 100)
+        else:
+            pwm.ChangeDutyCycle(0)
+
+        # Delay 
+        time.sleep(0.5)
+
+except KeyboardInterrupt:
+    pwm.stop()  # PWM signal is stopped
+    GPIO.cleanup()  # All the ports are cleared
